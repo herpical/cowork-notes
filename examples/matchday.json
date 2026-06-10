@@ -1,0 +1,40 @@
+{
+  "fixtures": [
+    {
+      "home": {
+        "name": "Eintracht Beispielstadt",
+        "staff": {
+          "name": "Trainerstab Beispielstadt",
+          "head_coach": 88,
+          "assistants": 82,
+          "tactical_experience": 85,
+          "continuity": 90
+        },
+        "chemistry": {
+          "squad_continuity": 85,
+          "minutes_together": 88,
+          "new_signings_integration": 78,
+          "preseason_quality": 82
+        },
+        "squad_quality": 80
+      },
+      "away": {
+        "name": "FC Neuaufbau",
+        "staff": {
+          "name": "Trainerstab Neuaufbau",
+          "head_coach": 72,
+          "assistants": 65,
+          "tactical_experience": 60,
+          "continuity": 40
+        },
+        "chemistry": {
+          "squad_continuity": 45,
+          "minutes_together": 40,
+          "new_signings_integration": 55,
+          "preseason_quality": 60
+        },
+        "squad_quality": 86
+      }
+    }
+  ]
+}
