@@ -16,6 +16,7 @@ from pathlib import Path
 from .models import CoachingStaff, Team, TeamChemistry
 from .predictor import MatchdayPredictor, ModelWeights, Prediction
 from .sample_data import sample_matchday
+from .worldcup2026 import matchday_one as worldcup_matchday_one
 
 
 def _team_from_dict(data: dict) -> Team:
@@ -68,6 +69,11 @@ def main(argv: list[str] | None = None) -> int:
         "(Schwerpunkt: Trainerstab & Eingespieltheit).",
     )
     parser.add_argument(
+        "--worldcup",
+        action="store_true",
+        help="1. Spieltag der WM 2026 (echte Teams, neutraler Boden).",
+    )
+    parser.add_argument(
         "--json",
         type=Path,
         help="JSON-Datei mit Begegnungen (Standard: Beispiel-Spieltag).",
@@ -80,7 +86,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--coaching-weight", type=float, default=0.40)
     parser.add_argument("--cohesion-weight", type=float, default=0.40)
     parser.add_argument("--squad-weight", type=float, default=0.20)
-    parser.add_argument("--home-advantage", type=float, default=5.0)
+    parser.add_argument(
+        "--home-advantage",
+        type=float,
+        default=None,
+        help="Heimbonus in Stärkepunkten "
+        "(Standard: 5, bei --worldcup 0 wegen neutralem Boden).",
+    )
     args = parser.parse_args(argv)
 
     weights = ModelWeights(
@@ -88,12 +100,22 @@ def main(argv: list[str] | None = None) -> int:
         cohesion=args.cohesion_weight,
         squad=args.squad_weight,
     )
-    predictor = MatchdayPredictor(weights, home_advantage=args.home_advantage)
+    if args.home_advantage is not None:
+        home_advantage = args.home_advantage
+    else:
+        home_advantage = 0.0 if args.worldcup else 5.0
+    predictor = MatchdayPredictor(weights, home_advantage=home_advantage)
 
-    fixtures = _fixtures_from_json(args.json) if args.json else sample_matchday()
+    if args.worldcup:
+        fixtures = worldcup_matchday_one()
+    elif args.json:
+        fixtures = _fixtures_from_json(args.json)
+    else:
+        fixtures = sample_matchday()
 
     norm = predictor.weights
-    print("Vorhersage 1. Spieltag")
+    title = "Vorhersage 1. Spieltag – WM 2026" if args.worldcup else "Vorhersage 1. Spieltag"
+    print(title)
     print(
         f"Gewichtung: Trainerstab {norm.coaching:.0%} | "
         f"Eingespieltheit {norm.cohesion:.0%} | Kader {norm.squad:.0%}"

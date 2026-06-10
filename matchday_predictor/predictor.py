@@ -144,9 +144,17 @@ class MatchdayPredictor:
         lambda_home = max(0.15, (total + supremacy) / 2)
         lambda_away = max(0.15, (total - supremacy) / 2)
 
-        p_home, p_draw, p_away, score = self._poisson_outcomes(
+        p_home, p_draw, p_away, scores = self._poisson_outcomes(
             lambda_home, lambda_away
         )
+
+        # Wahrscheinlichstes Ergebnis passend zum wahrscheinlichsten Ausgang
+        # wählen, damit Tipp und Ergebnis nicht widersprüchlich sind.
+        top_outcome = max(
+            (p_home, "home"), (p_draw, "draw"), (p_away, "away"),
+            key=lambda item: item[0],
+        )[1]
+        score = scores[top_outcome]
 
         return Prediction(
             home=home.name,
@@ -179,27 +187,29 @@ class MatchdayPredictor:
 
     def _poisson_outcomes(
         self, lambda_home: float, lambda_away: float
-    ) -> tuple[float, float, float, tuple[int, int]]:
-        """Sieg-/Remis-/Niederlage-Wahrscheinlichkeiten und Top-Ergebnis."""
+    ) -> tuple[float, float, float, dict[str, tuple[int, int]]]:
+        """Sieg-/Remis-/Niederlage-Wahrscheinlichkeiten und das je Ausgang
+        wahrscheinlichste Ergebnis (Schlüssel "home"/"draw"/"away")."""
         home_pmf = [self._poisson_pmf(i, lambda_home) for i in range(self.max_goals + 1)]
         away_pmf = [self._poisson_pmf(j, lambda_away) for j in range(self.max_goals + 1)]
 
         p_home = p_draw = p_away = 0.0
-        best_prob = -1.0
-        best_score = (0, 0)
+        best_prob = {"home": -1.0, "draw": -1.0, "away": -1.0}
+        best_score = {"home": (1, 0), "draw": (0, 0), "away": (0, 1)}
 
         for i, ph in enumerate(home_pmf):
             for j, pa in enumerate(away_pmf):
                 joint = ph * pa
-                if i > j:
+                category = "home" if i > j else "draw" if i == j else "away"
+                if category == "home":
                     p_home += joint
-                elif i == j:
+                elif category == "draw":
                     p_draw += joint
                 else:
                     p_away += joint
-                if joint > best_prob:
-                    best_prob = joint
-                    best_score = (i, j)
+                if joint > best_prob[category]:
+                    best_prob[category] = joint
+                    best_score[category] = (i, j)
 
         # Restmasse jenseits von max_goals proportional verteilen,
         # damit sich die Wahrscheinlichkeiten zu 1 summieren.

@@ -47,6 +47,17 @@ Mit Aufschlüsselung der Einzelbeiträge:
 python -m matchday_predictor --details
 ```
 
+**1. Spieltag der WM 2026** (alle 48 Teams, neutraler Boden → Heimvorteil 0):
+
+```bash
+python -m matchday_predictor --worldcup
+```
+
+Die echten Gruppen (A–L) und Matchday-1-Paarungen stammen aus öffentlichen
+Spielplänen (FIFA/ESPN/Sky/Wikipedia, Stand Juni 2026); die Bewertungen
+(Trainerstab, Eingespieltheit, Kaderqualität) sind subjektive
+Experteneinschätzungen vor Turnierbeginn (`matchday_predictor/worldcup2026.py`).
+
 Eigene Begegnungen aus einer JSON-Datei (Format siehe
 `examples/matchday.json`):
 
@@ -95,6 +106,7 @@ matchday_predictor/
   models.py      # Team, CoachingStaff, TeamChemistry + Score-Berechnung
   predictor.py   # Stärke-, Poisson- und Wahrscheinlichkeitslogik
   sample_data.py # Beispiel-Spieltag mit illustrativen Werten
+  worldcup2026.py# 1. Spieltag der WM 2026: echte Teams + geschätzte Werte
   cli.py         # Kommandozeilen-Schnittstelle
 examples/        # Beispiel-JSON für eigene Begegnungen
 tests/           # pytest-Tests
